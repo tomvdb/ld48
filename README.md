@@ -21,5 +21,5 @@ F - Toggle between fullscreen and windowed<br>
 
 # Attribution
 
-All graphics designed by Tristan Zipp. <br
+All graphics designed by Tristan Zipp. <br>
 Sound effects are all public domain and the background music is from https://www.bensound.com/

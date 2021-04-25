@@ -27,11 +27,13 @@ fishSpeed = 5
 hungerSpeed = 0.02
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((WIDTH,HEIGHT))
 clock = pygame.time.Clock()
 
 # graphics
 startScreen = pygame.image.load("data/bg_menu.png").convert_alpha()
+startScreenText = pygame.image.load("data/menu_text.png").convert_alpha()
 loseScreen = pygame.image.load("data/lose.png").convert_alpha()
 winScreen = pygame.image.load("data/win.png").convert_alpha()
 heart = pygame.image.load("data/heart_icon.png").convert_alpha()
@@ -66,6 +68,7 @@ class Bubble(pygame.sprite.DirtySprite):
             self.y = newY
         else:
             self.kill()
+
 
 class Player(pygame.sprite.DirtySprite):
     
@@ -222,6 +225,63 @@ class Seaweed(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(center=(self.x,self.y - bgViewPort))
 
+
+
+class Octopus(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super(Octopus, self).__init__()
+
+        self.image = pygame.Surface((80, 64), pygame.SRCALPHA)
+        self.bgViewPort = 0
+        self.realPosX = pos[0]
+        self.realPosY = pos[1]
+
+        self.spritesheet = pygame.image.load("data/octopus.png").convert_alpha()
+        self.rect = self.image.get_rect(center=pos)
+        self.x = pos[0]
+        self.y = pos[1]
+        self.animSpeed = 2
+        self.animSpeedCounter = self.animSpeed
+        self.index = 0
+        self.blitImage(self.index)
+        self.size = 1000
+        self.direction = 1
+
+    def blitImage(self, index):     
+        self.image.fill(0)   
+        self.image.blit(self.spritesheet, (0,0), (index * 80, 0, 80,64))
+
+    def update(self, bgViewPort, spritelist):
+        if self.animSpeedCounter <= 0:
+            self.index += 1
+
+            if self.index > 3:
+                self.index = 0
+
+            self.blitImage(self.index)
+            self.animSpeedCounter = self.animSpeed
+
+        self.animSpeedCounter -= 1
+
+        #fishpos = self.rect.center
+        # move fish
+        fishx = self.realPosX + (characterMovementAmount+2)
+        amplitude = 3
+        newx = self.realPosX
+        newy = self.realPosY
+        newy += int(2* math.sin(self.realPosX/20) * (math.pi*amplitude))
+        newx += (characterMovementAmount+2) * (self.direction)
+
+        if newx < -50 or newx > (WIDTH + 50):
+            self.direction *= -1
+            newy = random.randint(100, OCEANDEPTH - 100)
+       
+        self.realPosX = newx
+        self.realPosY = newy
+        self.rect = self.image.get_rect(center=(newx,newy - bgViewPort))
+
+    def getSize(self):
+        return self.size
 
 class Fish(pygame.sprite.Sprite):
     
@@ -389,6 +449,9 @@ while loop:
                 bubble_list.add(newSeaweed)
                 hungerHealthCount = 10
 
+                octopus = Octopus((random.randint(100, WIDTH-100),random.randint(100, OCEANDEPTH-100)))
+                all_sprites.add(octopus)
+
     if gameState == 0: # start screen
         # spawn some fishies
         spawnTimer -= 1
@@ -531,6 +594,8 @@ while loop:
 
         bubble_list.draw(screen)
         all_sprites.draw(screen)
+
+        screen.blit(startScreenText, (0,0))
 
     if gameState == 2: # end of game - Win
         screen.blit(winScreen, (0,0))

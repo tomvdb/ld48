@@ -27,7 +27,7 @@ fishSpeed = 5
 hungerSpeed = 0.02
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH,HEIGHT))
+screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
 # graphics
@@ -109,7 +109,7 @@ class Player(pygame.sprite.DirtySprite):
         return (newX, newY)
 
     def grow(self):
-        self.size += 1
+        self.size += 2
         self.blitImage(self.index)
 
     def eating(self):
@@ -331,8 +331,22 @@ bubble_list = pygame.sprite.Group()
 playersprite = pygame.sprite.Group()
 playersprite.add(player)
 
+newSeaweed = Seaweed((100,HEIGHT-64))
+bubble_list.add(newSeaweed)
+newSeaweed = Seaweed((75,HEIGHT-64))
+bubble_list.add(newSeaweed)
+newSeaweed = Seaweed((50,HEIGHT-0))
+bubble_list.add(newSeaweed)
+newSeaweed = Seaweed((125,HEIGHT-20))
+bubble_list.add(newSeaweed)
+newSeaweed = Seaweed((150,HEIGHT-10))
+bubble_list.add(newSeaweed)
+
+
 gameState = 0
 gameEndCount = 0
+
+hungerHealthCount = 10
 
 while loop:
 
@@ -373,7 +387,7 @@ while loop:
                 bubble_list.add(newSeaweed)
                 newSeaweed = Seaweed((150,OCEANDEPTH-10))
                 bubble_list.add(newSeaweed)
-
+                hungerHealthCount = 10
 
     if gameState == 0: # start screen
         # spawn some fishies
@@ -394,7 +408,7 @@ while loop:
         if keys_down[K_DOWN]:
             if cY > HEIGHT - 100 and bgViewPort < OCEANDEPTH - HEIGHT:
                 bgViewPort += bgMovementAmount
-                print(bgViewPort)
+                #print(bgViewPort)
             else:
                 if cY < HEIGHT - 20:
                     cY += characterMovementAmount
@@ -408,15 +422,22 @@ while loop:
                 cY -= characterMovementAmount
 
         if keys_down[K_LEFT]:
-            cX -= characterMovementAmount
+            if cX > 10:
+                cX -= characterMovementAmount
+
         if keys_down[K_RIGHT]:
-            cX += characterMovementAmount
+            if cX < WIDTH - 10:
+                cX += characterMovementAmount
 
 
     if gameState == 1:
-        if hungerMeter < 0:
+        hungerHealthCount -= 1
+
+        if hungerMeter < 0 and hungerHealthCount < 0:
+            pygame.mixer.Sound.play(damagesound)
             print("losing health - hungry!")
             health -= 1
+            hungerHealthCount = 10
 
         if health <= 0:
             pygame.mixer.Sound.play(losesound)
@@ -459,7 +480,7 @@ while loop:
             
         if len(collidedFish) > 0:
             for fish in collidedFish:
-                print("Collision: " + str(fish.getSize()) + str(player.getSize()))
+                #print("Collision: " + str(fish.getSize()) + str(player.getSize()))
                 
                 if player.getSize() >= fish.getSize():
                     player.eating()

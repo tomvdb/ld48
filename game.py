@@ -2,7 +2,7 @@ import pygame
 import math
 from pygame.locals import *
 import random
-
+import time
 import winsound
 from pygame import mixer
 
@@ -28,16 +28,19 @@ hungerSpeed = 0.02
 
 pygame.init()
 #screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.FULLSCREEN)
-screen = pygame.display.set_mode((WIDTH,HEIGHT))
+screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.NOFRAME)
 clock = pygame.time.Clock()
 
 # graphics
 startScreen = pygame.image.load("data/bg_menu.png").convert_alpha()
 startScreenText = pygame.image.load("data/menu_text.png").convert_alpha()
+titleScreen = pygame.image.load("data/title.png").convert_alpha()
 loseScreen = pygame.image.load("data/lose.png").convert_alpha()
 winScreen = pygame.image.load("data/win.png").convert_alpha()
 heart = pygame.image.load("data/heart_icon.png").convert_alpha()
 seaweed = pygame.image.load("data/seaweed.png").convert_alpha()
+fishframe = pygame.image.load("data/fish_frame.png").convert_alpha()
+hungerframe = pygame.image.load("data/hunger_frame.png").convert_alpha()
 
 # sounds effects all public domain
 eatsound = pygame.mixer.Sound("data/bloop_x.wav")
@@ -409,6 +412,7 @@ gameState = 0
 gameEndCount = 0
 
 hungerHealthCount = 10
+fullScreen = False
 
 while loop:
 
@@ -421,6 +425,14 @@ while loop:
             if event.key == K_ESCAPE:
                 loop = 0
                 continue
+
+            if event.key == K_f:
+                if fullScreen:
+                    screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.NOFRAME)                
+                    fullScreen = False
+                else:
+                    screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.FULLSCREEN)                
+                    fullScreen = True
 
             if event.key == K_SPACE:
                 gameState = 1
@@ -439,15 +451,15 @@ while loop:
                 bubble_list = pygame.sprite.Group()
                 playersprite.add(player)
 
-                newSeaweed = Seaweed((100,OCEANDEPTH-64))
+                newSeaweed = Seaweed((100,OCEANDEPTH-64-32))
                 bubble_list.add(newSeaweed)
-                newSeaweed = Seaweed((75,OCEANDEPTH-64))
+                newSeaweed = Seaweed((75,OCEANDEPTH-64-32))
                 bubble_list.add(newSeaweed)
-                newSeaweed = Seaweed((50,OCEANDEPTH-0))
+                newSeaweed = Seaweed((50,OCEANDEPTH-64-32))
                 bubble_list.add(newSeaweed)
-                newSeaweed = Seaweed((125,OCEANDEPTH-20))
+                newSeaweed = Seaweed((125,OCEANDEPTH-64-32))
                 bubble_list.add(newSeaweed)
-                newSeaweed = Seaweed((150,OCEANDEPTH-10))
+                newSeaweed = Seaweed((150,OCEANDEPTH-64-32))
                 bubble_list.add(newSeaweed)
                 hungerHealthCount = 10
 
@@ -470,6 +482,25 @@ while loop:
 
     if gameState == 1: # playing game
         keys_down = pygame.key.get_pressed()
+        if keys_down[K_q]:
+            gameState = 0
+            all_sprites = pygame.sprite.Group()
+            playersprite = pygame.sprite.Group()
+            bubble_list = pygame.sprite.Group()
+
+            newSeaweed = Seaweed((100,HEIGHT-64))
+            bubble_list.add(newSeaweed)
+            newSeaweed = Seaweed((75,HEIGHT-64))
+            bubble_list.add(newSeaweed)
+            newSeaweed = Seaweed((50,HEIGHT-0))
+            bubble_list.add(newSeaweed)
+            newSeaweed = Seaweed((125,HEIGHT-20))
+            bubble_list.add(newSeaweed)
+            newSeaweed = Seaweed((150,HEIGHT-10))
+            bubble_list.add(newSeaweed)
+
+            continue
+
         if keys_down[K_DOWN] or keys_down[K_s]:
             if cY > HEIGHT - 100 and bgViewPort < OCEANDEPTH - HEIGHT:
                 bgViewPort += bgMovementAmount
@@ -477,7 +508,6 @@ while loop:
             else:
                 if cY < HEIGHT - 20:
                     cY += characterMovementAmount
-
 
         if keys_down[K_UP] or keys_down[K_w]:
             if cY < 100:
@@ -494,15 +524,14 @@ while loop:
             if cX < WIDTH - 10:
                 cX += characterMovementAmount
 
-
     if gameState == 1:
         hungerHealthCount -= 1
 
         if hungerMeter < 0 and hungerHealthCount < 0:
             pygame.mixer.Sound.play(damagesound)
-            print("losing health - hungry!")
+            #print("losing health - hungry!")
             health -= 1
-            hungerHealthCount = 10
+            hungerHealthCount = 70
 
         if health <= 0:
             pygame.mixer.Sound.play(losesound)
@@ -570,12 +599,14 @@ while loop:
         playersprite.draw(screen)
 
         # hunger
-        screen.fill((100, 0, 0), (10,10, 100, 20))
-        screen.fill((0, 255, 0), (10,10, int(hungerMeter), 20))
+        screen.fill((100, 0, 0), (43,10, 100, 20))
+        screen.fill((0, 255, 0), (43,10, int(hungerMeter), 20))
+        screen.blit(hungerframe, (10, 7))
 
         # foodchain
         screen.fill((255, 209, 94), (200,10, 100, 20))
         screen.fill((0, 0, 255), (200,10, int(player.size)*2, 20))
+        screen.blit(fishframe, (168, 8))
 
         # health
         for x in range(health):
@@ -597,8 +628,10 @@ while loop:
         all_sprites.draw(screen)
 
         screen.blit(startScreenText, (0,0))
+        screen.blit(titleScreen, (0,0))
 
     if gameState == 2: # end of game - Win
+        screen.blit(startScreen, (0,0))
         screen.blit(winScreen, (0,0))
 
     if gameState == 3: # end of game - Lose

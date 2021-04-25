@@ -94,6 +94,7 @@ class Player(pygame.sprite.DirtySprite):
         self.eatingTimes = 1
         self.eatingCounter = self.eatingTimes
         self.skip = 1
+        self.prevViewPort = 0
         
     def damage(self, fish):
         enemyPos = fish.rect.center
@@ -108,7 +109,7 @@ class Player(pygame.sprite.DirtySprite):
         if enemyPos[1] >= playerPos[1]:
             newY -= 50
 
-        self.updatePlayer((newX, newY))
+        self.updatePlayer((newX, newY), 0)
         return (newX, newY)
 
     def grow(self):
@@ -160,9 +161,9 @@ class Player(pygame.sprite.DirtySprite):
 
         self.animSpeedCounter -= 1
 
-    def updatePlayer(self, pos):
+    def updatePlayer(self, pos, bgviewPort):
         if self.state != 3:
-            if pos[0] == self.prevx and pos[1] == self.prevy:
+            if pos[0] == self.prevx and pos[1] == self.prevy and bgViewPort == self.prevViewPort:
                 if self.state != 2:
                     # change to idle state
                     self.state =2 
@@ -188,6 +189,7 @@ class Player(pygame.sprite.DirtySprite):
         self.rect = self.image.get_rect(center=pos)
         self.prevx = pos[0]
         self.prevy = pos[1]
+        self.prevViewPort = bgviewPort
 
     def getSize(self):
         return self.size
@@ -468,7 +470,7 @@ while loop:
 
     if gameState == 1: # playing game
         keys_down = pygame.key.get_pressed()
-        if keys_down[K_DOWN]:
+        if keys_down[K_DOWN] or keys_down[K_s]:
             if cY > HEIGHT - 100 and bgViewPort < OCEANDEPTH - HEIGHT:
                 bgViewPort += bgMovementAmount
                 #print(bgViewPort)
@@ -477,18 +479,18 @@ while loop:
                     cY += characterMovementAmount
 
 
-        if keys_down[K_UP]:
+        if keys_down[K_UP] or keys_down[K_w]:
             if cY < 100:
                 if bgViewPort > 0:
                     bgViewPort -= bgMovementAmount
             else:
                 cY -= characterMovementAmount
 
-        if keys_down[K_LEFT]:
+        if keys_down[K_LEFT] or keys_down[K_a]:
             if cX > 10:
                 cX -= characterMovementAmount
 
-        if keys_down[K_RIGHT]:
+        if keys_down[K_RIGHT] or keys_down[K_d]:
             if cX < WIDTH - 10:
                 cX += characterMovementAmount
 
@@ -556,7 +558,7 @@ while loop:
                     health -= 1
                     (cX, cY) = player.damage(fish)
 
-        player.updatePlayer((cX, cY))
+        player.updatePlayer((cX, cY), bgViewPort)
         bubble_list.update(bgViewPort)
 
         # render screen

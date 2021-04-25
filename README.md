@@ -1,8 +1,12 @@
 # Fish Eat Fish - Ludum Dare #48 Game Jam Entry 
 
-![GitHub Logo](/screenshots/title.png)
+![TitleScreen](/screenshots/title.png)
 
 A simple fun arcade game where you attempt to get on top of the foodchain. Eat the fish smaller than you and grow in the process. Avoid bigger fish or become their dinner. And stay away from the octopus!
+
+![Gameplay](/screenshots/gameplay.png)
+
+![GameOver](/screenshots/gameover.png)
 
 # Team
 Tristan Zipp<br>

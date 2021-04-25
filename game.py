@@ -579,7 +579,6 @@ while loop:
 
         # health
         for x in range(health):
-            #pygame.draw.circle(screen, (250, 0, 0), (WIDTH - (5 * 20) + (x * 20),20), 10)
             screen.blit(heart, (WIDTH - 20 - (5 * 20) + (x * 20),20) )
 
 
